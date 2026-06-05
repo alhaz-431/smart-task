@@ -19,3 +19,13 @@ export const authorize = (...roles: string[]) => {
     next();
   };
 };
+
+export const authorizeRoles = (...allowedRoles: string[]) => {
+  return (req: any, res: Response, next: NextFunction) => {
+   
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'Access denied: You do not have the required role' });
+    }
+    next();
+  };
+};

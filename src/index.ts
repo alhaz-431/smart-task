@@ -4,7 +4,7 @@ import express, { Request, Response } from 'express';
 import projectRoutes from './routes/projectRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import { protect, authorize } from './middlewares/authMiddleware.js';
-
+import taskRoutes from './routes/taskRoutes.js';
 const app = express();
 
 app.use(express.json());
@@ -20,6 +20,7 @@ app.get("/", (req: Request, res: Response) => {
 // ✅ ROUTES
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/tasks', taskRoutes);
 
 // ✅ PROTECTED ROUTES
 app.get('/api/admin', protect, authorize('ADMIN'), (req: Request, res: Response) => {
