@@ -2,12 +2,13 @@ import { Request, Response } from 'express';
 import prisma from '../db.js';
 
 // ১. প্রজেক্ট তৈরি (Create)
-export const createProject = async (req: Request, res: Response) => {
+export const createProject = async (req: any, res: Response) => { // req-কে 'any' দাও যাতে req.user এক্সেস করা যায়
   try {
-    // deadline ফিল্ডটি যোগ করা হয়েছে
     const { title, description, status, deadline } = req.body;
     
-    // ভ্যালিডেশন: টাইটেল চেক করা
+    // এই লাইনটি জরুরি: মিডলওয়্যার থেকে ইউজার আইডি নেওয়া
+    const userId = req.user.id; 
+    
     if (!title || !deadline) {
       return res.status(400).json({ error: 'Title and Deadline are required' });
     }
@@ -17,7 +18,8 @@ export const createProject = async (req: Request, res: Response) => {
         title, 
         description, 
         status: status || 'PENDING',
-        deadline: new Date(deadline), // স্ট্রিং থেকে ডেটে রূপান্তর
+        deadline: new Date(deadline),
+        userId: userId, // এখানে userId যোগ করো
       },
     });
     res.status(201).json(project);
