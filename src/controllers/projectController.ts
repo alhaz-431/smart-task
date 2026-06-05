@@ -4,18 +4,25 @@ import prisma from '../db.js';
 // ১. প্রজেক্ট তৈরি (Create)
 export const createProject = async (req: Request, res: Response) => {
   try {
-    const { title, description, status } = req.body;
+    // deadline ফিল্ডটি যোগ করা হয়েছে
+    const { title, description, status, deadline } = req.body;
     
-    // ডাটাবেসে প্রজেক্ট ক্রিয়েট
+    // ভ্যালিডেশন: টাইটেল চেক করা
+    if (!title || !deadline) {
+      return res.status(400).json({ error: 'Title and Deadline are required' });
+    }
+
     const project = await prisma.project.create({
       data: { 
         title, 
         description, 
-        status: status || 'PENDING' 
+        status: status || 'PENDING',
+        deadline: new Date(deadline), // স্ট্রিং থেকে ডেটে রূপান্তর
       },
     });
     res.status(201).json(project);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to create project' });
   }
 };
@@ -24,7 +31,7 @@ export const createProject = async (req: Request, res: Response) => {
 export const getAllProjects = async (req: Request, res: Response) => {
   try {
     const projects = await prisma.project.findMany({ 
-      include: { tasks: true } // প্রজেক্টের সাথে টাস্কগুলোও চলে আসবে
+      include: { tasks: true }
     });
     res.json(projects);
   } catch (error) {
@@ -32,9 +39,8 @@ export const getAllProjects = async (req: Request, res: Response) => {
   }
 };
 
-// ৩. প্রজেক্ট ডিলিট করা (Delete) - এখানে আইডি কাস্টিং করা হয়েছে
+// ৩. প্রজেক্ট ডিলিট করা (Delete)
 export const deleteProject = async (req: Request, res: Response) => {
-  // TypeScript এরর এড়াতে 'as string' ব্যবহার করা হয়েছে
   const id = req.params.id as string;
   
   try {
@@ -43,22 +49,27 @@ export const deleteProject = async (req: Request, res: Response) => {
     });
     res.json({ message: 'Project deleted successfully' });
   } catch (error) {
-    res.status(404).json({ error: 'Project not found or could not be deleted' });
+    res.status(404).json({ error: 'Project not found' });
   }
 };
 
-// ৪. প্রজেক্ট আপডেট করা (Update) - এটি তোমার দরকার হবে
+// ৪. প্রজেক্ট আপডেট করা (Update)
 export const updateProject = async (req: Request, res: Response) => {
   const id = req.params.id as string;
-  const { title, description, status } = req.body;
+  const { title, description, status, deadline } = req.body;
   
   try {
+    const dataToUpdate: any = { title, description, status };
+    if (deadline) {
+      dataToUpdate.deadline = new Date(deadline);
+    }
+
     const updatedProject = await prisma.project.update({
       where: { id: id },
-      data: { title, description, status }
+      data: dataToUpdate
     });
     res.json(updatedProject);
   } catch (error) {
-    res.status(404).json({ error: 'Project not found' });
+    res.status(404).json({ error: 'Project not found or update failed' });
   }
 };
