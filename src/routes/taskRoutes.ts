@@ -4,7 +4,7 @@ import { protect } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/', protect, createTask); // টাস্ক তৈরি
-router.patch('/:id/status', protect, updateTaskStatus); // স্ট্যাটাস আপডেট
+router.post('/', protect, createTask);
+router.patch('/:id/status', protect, updateTaskStatus);
 
 export default router;
