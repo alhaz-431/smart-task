@@ -3,7 +3,8 @@ import {
   createTask, 
   updateTaskStatus, 
   assignTask, 
-  updateTaskPriority 
+  updateTaskPriority ,
+  getTasksByProject
 } from '../controllers/taskController.js';
 import { protect } from '../middlewares/authMiddleware.js';
 
@@ -14,5 +15,5 @@ router.post('/', protect, createTask);
 router.patch('/:id/status', protect, updateTaskStatus);
 router.patch('/:id/assign', protect, assignTask);
 router.patch('/:id/priority', protect, updateTaskPriority);
-
+router.get('/project/:projectId', protect, getTasksByProject);
 export default router;

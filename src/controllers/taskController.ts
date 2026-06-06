@@ -54,10 +54,10 @@ export const assignTask = async (req: Request, res: Response) => {
   }
 };
 
-// টাস্কের প্রায়োরিটি পরিবর্তন করা
+
 export const updateTaskPriority = async (req: Request, res: Response) => {
   try {
-    // আইডিটিকে স্ট্রিং হিসেবে নিশ্চিত করা হয়েছে
+   
     const id = req.params.id as string;
     const { priority } = req.body;
     const task = await prisma.task.update({
@@ -67,5 +67,22 @@ export const updateTaskPriority = async (req: Request, res: Response) => {
     res.json(task);
   } catch (error) {
     res.status(500).json({ error: "Failed to update priority" });
+  }
+};
+
+
+export const getTasksByProject = async (req: Request, res: Response) => {
+  try {
+ 
+    const projectId = req.params.projectId as string; 
+    
+    const tasks = await prisma.task.findMany({
+      where: { 
+        projectId: projectId 
+      },
+    });
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch tasks" });
   }
 };
