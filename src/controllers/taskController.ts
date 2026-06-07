@@ -86,3 +86,15 @@ export const getTasksByProject = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch tasks" });
   }
 };
+
+export const deleteTask = async (req: Request, res: Response) => {
+  try {
+    const  id  = req.params .id as string;
+    await prisma.task.delete({
+      where: { id :id}
+    });
+    res.json({ message: "Task deleted successfully" });
+  } catch (error) {
+    res.status(404).json({ error: "Task not found" });
+  }
+};
