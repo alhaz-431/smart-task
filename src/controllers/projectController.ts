@@ -75,3 +75,23 @@ export const updateProject = async (req: Request, res: Response) => {
     res.status(404).json({ error: 'Project not found or update failed' });
   }
 };
+
+
+
+export const getProjectById = async (req: Request, res: Response) => {
+  try {
+    const  id  = req.params.id as string;
+    const project = await prisma.project.findUnique({
+      where: { id:id },
+      include: { tasks: true } 
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    res.json(project);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch project" });
+  }
+};
