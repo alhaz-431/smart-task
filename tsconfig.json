@@ -1,23 +1,23 @@
-// {
-//   "compilerOptions": {
-//     "target": "ESNext",
-//     "module": "NodeNext",
-//     "moduleResolution": "NodeNext",
-//     "esModuleInterop": true,
-//     "strict": true,
-//     "skipLibCheck": true,
-//     "sourceMap": true,
-//     "outDir": "./dist",
-//     "rootDir": "./src",
-//     "moduleDetection": "force",
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "moduleDetection": "force",
 
     
-//     "types": ["node"],
-//     "typeRoots": ["./node_modules/@types"],
-//     "resolveJsonModule": true
-//   },
-//   "include": ["src/**/*"]
-// }
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types"],
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*"]
+}
 
 
 
