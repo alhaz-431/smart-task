@@ -2,11 +2,9 @@ import { Request, Response } from 'express';
 import prisma from '../db.js';
 
 // ১. প্রজেক্ট তৈরি (Create)
-export const createProject = async (req: any, res: Response) => { // req-কে 'any' দাও যাতে req.user এক্সেস করা যায়
+export const createProject = async (req: any, res: Response) => { 
   try {
     const { title, description, status, deadline } = req.body;
-    
-    // এই লাইনটি জরুরি: মিডলওয়্যার থেকে ইউজার আইডি নেওয়া
     const userId = req.user.id; 
     
     if (!title || !deadline) {
@@ -19,7 +17,7 @@ export const createProject = async (req: any, res: Response) => { // req-কে 
         description, 
         status: status || 'PENDING',
         deadline: new Date(deadline),
-        userId: userId, // এখানে userId যোগ করো
+        userId: userId, 
       },
     });
     res.status(201).json(project);
@@ -29,10 +27,10 @@ export const createProject = async (req: any, res: Response) => { // req-কে 
   }
 };
 
-// ২. সব প্রজেক্ট দেখা (View All)
+// ২. সব প্রজেক্ট দেখা (View All) - ডুপ্লিকেট সরিয়ে একটি রাখা হয়েছে
 export const getAllProjects = async (req: Request, res: Response) => {
   try {
-    const projects = await prisma.project.findMany({ 
+    const projects = await prisma.project.findMany({
       include: { tasks: true }
     });
     res.json(projects);
@@ -44,7 +42,6 @@ export const getAllProjects = async (req: Request, res: Response) => {
 // ৩. প্রজেক্ট ডিলিট করা (Delete)
 export const deleteProject = async (req: Request, res: Response) => {
   const id = req.params.id as string;
-  
   try {
     await prisma.project.delete({ 
       where: { id: id } 
@@ -76,11 +73,10 @@ export const updateProject = async (req: Request, res: Response) => {
   }
 };
 
-
-
+// ৫. আইডি দিয়ে প্রজেক্ট দেখা (Get by ID)
 export const getProjectById = async (req: Request, res: Response) => {
   try {
-    const  id  = req.params.id as string;
+    const id = req.params.id as string;
     const project = await prisma.project.findUnique({
       where: { id:id },
       include: { tasks: true } 

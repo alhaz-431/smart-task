@@ -1,6 +1,6 @@
 import 'dotenv/config'; 
 import express, { Request, Response } from 'express';
-
+import userRoutes from './routes/userRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import { protect, authorize } from './middlewares/authMiddleware.js';
@@ -21,7 +21,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
-
+app.use('/api/users', userRoutes);
 // ✅ PROTECTED ROUTES
 app.get('/api/admin', protect, authorize('ADMIN'), (req: Request, res: Response) => {
   res.json({ message: 'Welcome Admin' });
