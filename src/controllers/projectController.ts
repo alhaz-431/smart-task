@@ -1,16 +1,24 @@
 import { Request, Response } from 'express';
 import prisma from '../db.js';
+import {  NextFunction } from 'express'; // NextFunction এখানে যোগ করো
+import { createProjectSchema } from '../validators/projectValidator.js'; // এটি তোমার ভ্যালিডেশন স্কিমা ফাইল
 
-// ১. প্রজেক্ট তৈরি (Create)
-export const createProject = async (req: any, res: Response) => { 
+export const createProject = async (req: any, res: Response, next: NextFunction) => { // next প্যারামিটারটি যোগ করো
   try {
-    const { title, description, status, deadline } = req.body;
-    const userId = req.user.id; 
-    
-    if (!title || !deadline) {
-      return res.status(400).json({ error: 'Title and Deadline are required' });
+    // ১. ভ্যালিডেশন চেক (এটিই সব ডাটা চেক করবে)
+    const result = createProjectSchema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({ 
+        message: "Validation Error", 
+        errors: result.error.issues 
+      });
     }
 
+    // ২. ভ্যালিডেশন পাস করলে এখান থেকে ডাটা নাও
+    const { title, description, status, deadline } = result.data;
+    const userId = req.user.id; 
+
+    // ৩. ডাটাবেসে সেভ করো
     const project = await prisma.project.create({
       data: { 
         title, 
@@ -20,10 +28,10 @@ export const createProject = async (req: any, res: Response) => {
         userId: userId, 
       },
     });
+    
     res.status(201).json(project);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to create project' });
+    next(error); // গ্লোবাল এরর হ্যান্ডলার ব্যবহার করলে এভাবে পাঠাও
   }
 };
 
