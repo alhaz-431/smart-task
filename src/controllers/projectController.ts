@@ -35,10 +35,11 @@ export const createProject = async (req: any, res: Response, next: NextFunction)
   }
 };
 
-// ২. সব প্রজেক্ট দেখা (View All) - ডুপ্লিকেট সরিয়ে একটি রাখা হয়েছে
-export const getAllProjects = async (req: Request, res: Response) => {
+export const getAllProjects = async (req: any, res: Response) => {
   try {
+    // এখানে req.user.id তখনই কাজ করবে যদি আপনার middleware এ user সেট করা থাকে
     const projects = await prisma.project.findMany({
+      where: { userId: req.user.id }, 
       include: { tasks: true }
     });
     res.json(projects);
@@ -46,7 +47,6 @@ export const getAllProjects = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch projects' });
   }
 };
-
 // ৩. প্রজেক্ট ডিলিট করা (Delete)
 export const deleteProject = async (req: Request, res: Response) => {
   const id = req.params.id as string;
