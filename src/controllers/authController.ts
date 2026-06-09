@@ -5,6 +5,7 @@ import prisma from '../db.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_key_123';
 
+// সাইনআপ ফাংশন
 export const signup = async (req: Request, res: Response) => {
   try {
     const { name, email, password, role } = req.body;
@@ -12,7 +13,7 @@ export const signup = async (req: Request, res: Response) => {
     if (!name || !email || !password) 
       return res.status(400).json({ error: 'Required fields missing' });
 
-    // ফ্রন্টএন্ডের 'user' কে ডাটাবেসের 'MEMBER' এ ম্যাপ করতে হবে
+    // রোল ম্যাপ করা
     let mappedRole = 'MEMBER';
     if (role === 'admin') mappedRole = 'ADMIN';
     else if (role === 'manager') mappedRole = 'MANAGER';
@@ -25,28 +26,55 @@ export const signup = async (req: Request, res: Response) => {
         name, 
         email, 
         password: hashedPassword, 
-        role: mappedRole as any // টাইপস্ক্রিপ্ট এরর এড়াতে as any
+        role: mappedRole as any 
       },
     });
 
-    res.status(201).json({ message: 'User created', user: { id: user.id, email: user.email, role: user.role } });
+    res.status(201).json({ 
+      message: 'User created', 
+      user: { id: user.id, email: user.email, role: user.role } 
+    });
   } catch (error: any) {
     console.error("Signup Error:", error);
     if (error.code === 'P2002') return res.status(400).json({ error: 'Email already exists' });
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+// লগইন ফাংশন
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
+    
+    // ইউজার খুঁজে বের করা
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+
+    // ইউজার বা পাসওয়ার্ড না থাকলে এরর দেওয়া
+    if (!user || !user.password) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token, user: { id: user.id, name: user.name, role: user.role } });
+    // পাসওয়ার্ড মিল চেক করা
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // JWT টোকেন তৈরি করা
+    const token = jwt.sign(
+      { id: user.id, role: user.role }, 
+      JWT_SECRET, 
+      { expiresIn: '1d' }
+    );
+
+    // সফল রেসপন্স
+    res.json({ 
+      token, 
+      user: { id: user.id, name: user.name, role: user.role } 
+    });
+
   } catch (error) {
+    console.error("Login Error:", error);
     res.status(500).json({ error: 'Login failed' });
   }
 };
