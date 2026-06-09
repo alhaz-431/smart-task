@@ -87,14 +87,23 @@ export const getTasksByProject = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteTask = async (req: Request, res: Response) => {
+export const deleteTask = async (req: any, res: any) => {
   try {
-    const  id  = req.params .id as string;
-    await prisma.task.delete({
-      where: { id :id}
+    const { id } = req.params;
+
+    // ১. প্রথমে টাস্কটি ডিলিট করুন
+    await prisma.task.delete({ where: { id } });
+
+    // ২. এবার লগ সেভ করুন (আপনার দেওয়া কোডটি এখানে বসবে)
+    await prisma.activityLog.create({
+      data: {
+        action: `Task deleted: ${id}`, // ডাইনামিক অ্যাকশন টেক্সট
+        userId: req.user.id,          // মিডলওয়্যার থেকে পাওয়া ইউজারের আইডি
+      }
     });
+
     res.json({ message: "Task deleted successfully" });
   } catch (error) {
-    res.status(404).json({ error: "Task not found" });
+    res.status(500).json({ error: "Something went wrong" });
   }
 };
