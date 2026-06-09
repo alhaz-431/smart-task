@@ -37,3 +37,46 @@ export const updateMyProfile = async (req: any, res: Response) => {
     res.status(500).json({ error: "Failed to update profile" });
   }
 };
+
+// ১. নতুন মেম্বার যোগ করার জন্য
+export const addUser = async (req: Request, res: Response) => {
+  try {
+    const { name, email, role } = req.body;
+
+    // পাসওয়ার্ড ফিল্ডটি অপশনাল হওয়ায় সরাসরি ডাটা ইনসার্ট করা যাবে
+    const user = await prisma.user.create({ 
+      data: { 
+        name, 
+        email, 
+        role: role || "MEMBER" // যদি রোল না দেওয়া থাকে, ডিফল্ট MEMBER সেট হবে
+      } 
+    });
+
+    res.status(201).json(user);
+  } catch (error: any) {
+    // ইমেইল ইউনিক না হলে বা অন্য কোন ডাটাবেস এরর হলে এটি ধরবে
+    res.status(500).json({ error: "Failed to add user: " + error.message });
+  }
+};
+
+// ২. মেম্বার এডিট করার জন্য
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, email, role } = req.body;
+
+    const user = await prisma.user.update({
+      where: { id: String(id) }, // id কে নিশ্চিতভাবে String করা হলো
+      data: { 
+        name, 
+        email, 
+        role 
+      }
+    });
+
+    res.json(user);
+  } catch (error: any) {
+    // ইউজার খুঁজে না পাওয়া গেলে বা আপডেট এরর হলে এটি ধরবে
+    res.status(500).json({ error: "Failed to update user: " + error.message });
+  }
+};
