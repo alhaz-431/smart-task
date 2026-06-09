@@ -1,22 +1,23 @@
 import 'dotenv/config'; 
 import express, { Request, Response } from 'express';
-import cors from 'cors'; // এটি অবশ্যই ইন্সটল করে নেবে: npm install cors
+import cors from 'cors';
 import morgan from 'morgan';
 import userRoutes from './routes/userRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
+// ড্যাশবোর্ড রাউট এবং কন্ট্রোলার ইমপোর্ট করুন (আপনার ফাইল স্ট্রাকচার অনুযায়ী পাথ চেক করুন)
+import dashboardRoutes from './routes/dashboardRoutes.js'; 
 import { protect, authorize } from './middlewares/authMiddleware.js';
 import { errorHandler } from './middlewares/errorMiddleware.js';
 
 const app = express();
 
-// ✅ ১. মিডলওয়্যারসমূহ (সব রাউটের আগে থাকবে)
-app.use(cors()); // Cross-Origin Resource Sharing এনাবল করা
+app.use(cors());
 app.use(express.json());
-app.use(morgan('dev')); // লগিং সবার উপরে রাখা ভালো
+app.use(morgan('dev'));
 
-// ✅ ২. রাউটস
+// রাউটস
 app.get("/", (req: Request, res: Response) => {
   res.json({ status: "success", message: "Smart Task API running 🚀" });
 });
@@ -26,16 +27,10 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/users', userRoutes);
 
-// ✅ ৩. প্রোটেক্টেড রাউটস
-app.get('/api/admin', protect, authorize('ADMIN'), (req: Request, res: Response) => {
-  res.json({ message: 'Welcome Admin' });
-});
+// ড্যাশবোর্ড রাউট (সবগুলো ড্যাশবোর্ড রিলেটেড রাউট এখানে থাকবে)
+app.use('/api/dashboard', protect, dashboardRoutes);
 
-app.get('/api/dashboard', protect, authorize('MEMBER', 'MANAGER', 'ADMIN'), (req: Request, res: Response) => {
-  res.json({ message: 'Welcome to your Dashboard' });
-});
-
-// ✅ ৪. গ্লোবাল এরর হ্যান্ডলার (সবশেষে)
+// ✅ এরর হ্যান্ডলার
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;

@@ -1,29 +1,26 @@
-import { Request, Response } from 'express';
-import prisma from '../db.js';
-import {  NextFunction } from 'express'; // NextFunction এখানে যোগ করো
-import { createProjectSchema } from '../validators/projectValidator.js'; // এটি তোমার ভ্যালিডেশন স্কিমা ফাইল
+import { Request, Response, NextFunction } from 'express';
+import { PrismaClient, ProjectStatus } from '@prisma/client';
+import { createProjectSchema } from '../validators/projectValidator.js';
 
-export const createProject = async (req: any, res: Response, next: NextFunction) => { // next প্যারামিটারটি যোগ করো
+const prisma = new PrismaClient();
+
+// ১. প্রজেক্ট তৈরি (Create)
+export const createProject = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // ১. ভ্যালিডেশন চেক (এটিই সব ডাটা চেক করবে)
-    const result = createProjectSchema.safeParse(req.body);
-    if (!result.success) {
-      return res.status(400).json({ 
-        message: "Validation Error", 
-        errors: result.error.issues 
-      });
+    // ভ্যালিডেশন চেক (Zod এর সঠিক এরর হ্যান্ডলিং)
+    const validation = createProjectSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ errors: validation.error.flatten().fieldErrors });
     }
 
-    // ২. ভ্যালিডেশন পাস করলে এখান থেকে ডাটা নাও
-    const { title, description, status, deadline } = result.data;
-    const userId = req.user.id; 
+    const { title, description, deadline } = validation.data;
+    const userId = (req as any).user.id; 
 
-    // ৩. ডাটাবেসে সেভ করো
     const project = await prisma.project.create({
       data: { 
         title, 
         description, 
-        status: status || 'PENDING',
+        status: ProjectStatus.ACTIVE, 
         deadline: new Date(deadline),
         userId: userId, 
       },
@@ -31,15 +28,16 @@ export const createProject = async (req: any, res: Response, next: NextFunction)
     
     res.status(201).json(project);
   } catch (error) {
-    next(error); // গ্লোবাল এরর হ্যান্ডলার ব্যবহার করলে এভাবে পাঠাও
+    next(error); 
   }
 };
 
-export const getAllProjects = async (req: any, res: Response) => {
+// ২. সব প্রজেক্ট দেখা (Get All)
+export const getAllProjects = async (req: Request, res: Response) => {
   try {
-    // এখানে req.user.id তখনই কাজ করবে যদি আপনার middleware এ user সেট করা থাকে
+    const userId = (req as any).user.id;
     const projects = await prisma.project.findMany({
-      where: { userId: req.user.id }, 
+      where: { userId: userId }, 
       include: { tasks: true }
     });
     res.json(projects);
@@ -47,33 +45,21 @@ export const getAllProjects = async (req: any, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch projects' });
   }
 };
-// ৩. প্রজেক্ট ডিলিট করা (Delete)
-export const deleteProject = async (req: Request, res: Response) => {
-  const id = req.params.id as string;
-  try {
-    await prisma.project.delete({ 
-      where: { id: id } 
-    });
-    res.json({ message: 'Project deleted successfully' });
-  } catch (error) {
-    res.status(404).json({ error: 'Project not found' });
-  }
-};
 
-// ৪. প্রজেক্ট আপডেট করা (Update)
+// ৩. প্রজেক্ট আপডেট করা (Update)
 export const updateProject = async (req: Request, res: Response) => {
-  const id = req.params.id as string;
+  const id = req.params.id as string; // টাইপ নিশ্চিত করা হলো
   const { title, description, status, deadline } = req.body;
   
   try {
-    const dataToUpdate: any = { title, description, status };
-    if (deadline) {
-      dataToUpdate.deadline = new Date(deadline);
-    }
-
     const updatedProject = await prisma.project.update({
-      where: { id: id },
-      data: dataToUpdate
+      where: { id },
+      data: {
+        title,
+        description,
+        status: status as ProjectStatus, 
+        deadline: deadline ? new Date(deadline) : undefined
+      }
     });
     res.json(updatedProject);
   } catch (error) {
@@ -81,18 +67,29 @@ export const updateProject = async (req: Request, res: Response) => {
   }
 };
 
-// ৫. আইডি দিয়ে প্রজেক্ট দেখা (Get by ID)
+// ৪. প্রজেক্ট ডিলিট করা (Delete)
+export const deleteProject = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string; // টাইপ নিশ্চিত করা হলো
+    await prisma.project.delete({ 
+      where: { id } 
+    });
+    res.json({ message: 'Project deleted successfully' });
+  } catch (error) {
+    res.status(404).json({ error: 'Project not found' });
+  }
+};
+
+// ৫. আইডি দিয়ে প্রজেক্ট দেখা (Get by ID)
 export const getProjectById = async (req: Request, res: Response) => {
   try {
-    const id = req.params.id as string;
+    const id = req.params.id as string; // টাইপ নিশ্চিত করা হলো
     const project = await prisma.project.findUnique({
-      where: { id:id },
+      where: { id },
       include: { tasks: true } 
     });
 
-    if (!project) {
-      return res.status(404).json({ error: "Project not found" });
-    }
+    if (!project) return res.status(404).json({ error: "Project not found" });
 
     res.json(project);
   } catch (error) {
