@@ -107,3 +107,22 @@ export const deleteTask = async (req: any, res: any) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 };
+
+
+
+export const getAllTasks = async (req: Request, res: Response) => {
+  try {
+    const tasks = await prisma.task.findMany({
+      include: {
+        project: true,   // প্রজেক্টের নাম দেখানোর জন্য
+        assignee: true,  // মেম্বারের নাম দেখানোর জন্য
+      },
+      orderBy: {
+        createdAt: 'desc', // নতুন টাস্ক আগে দেখাবে
+      },
+    });
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch all tasks" });
+  }
+};

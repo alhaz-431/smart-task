@@ -5,7 +5,8 @@ import {
   assignTask, 
   updateTaskPriority,
   getTasksByProject,
-  deleteTask
+  deleteTask,
+  getAllTasks
 } from '../controllers/taskController.js';
 import { protect } from '../middlewares/authMiddleware.js';
 import { restrictTo } from '../middlewares/roleMiddleware.js';
@@ -22,7 +23,7 @@ router.patch('/:id/priority', protect, updateTaskPriority);
 // অ্যাসাইন করা এবং ডিলিট করার ক্ষমতা শুধু ম্যানেজারের
 router.patch('/:id/assign', protect, restrictTo('MANAGER'), assignTask);
 router.delete('/:id', protect, restrictTo('MANAGER'), deleteTask);
-
+router.get('/', protect, restrictTo('ADMIN'), getAllTasks);
 // প্রজেক্টের সব টাস্ক দেখা
 router.get('/project/:projectId', protect, getTasksByProject);
 
