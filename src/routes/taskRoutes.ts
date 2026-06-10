@@ -13,18 +13,18 @@ import { restrictTo } from '../middlewares/roleMiddleware.js';
 
 const router = express.Router();
 
-// টাস্ক রুটস
+
 router.post('/', protect, createTask);
 
-// টাস্ক স্ট্যাটাস এবং প্রায়োরিটি সবাই (Manager/Member) আপডেট করতে পারবে
+
 router.patch('/:id/status', protect, updateTaskStatus);
 router.patch('/:id/priority', protect, updateTaskPriority);
 
-// অ্যাসাইন করা এবং ডিলিট করার ক্ষমতা শুধু ম্যানেজারের
+
 router.patch('/:id/assign', protect, restrictTo('MANAGER'), assignTask);
 router.delete('/:id', protect, restrictTo('MANAGER'), deleteTask);
 router.get('/', protect, restrictTo('ADMIN'), getAllTasks);
-// প্রজেক্টের সব টাস্ক দেখা
+
 router.get('/project/:projectId', protect, getTasksByProject);
 
 export default router;
