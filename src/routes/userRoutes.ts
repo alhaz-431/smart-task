@@ -45,4 +45,15 @@ router.patch('/:id', protect, authorize('ADMIN'), async (req, res) => {
   }
 });
 
+
+
+router.delete('/:id', protect, authorize('ADMIN'), async (req, res) => {
+  try {
+    await prisma.user.delete({ where: { id: req.params.id } });
+    res.json({ message: "ইউজার সফলভাবে ডিলিট হয়েছে" });
+  } catch (error) {
+    res.status(500).json({ error: "ডিলিট করতে সমস্যা হয়েছে" });
+  }
+});
+
 export default router;
