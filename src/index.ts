@@ -19,7 +19,12 @@ const app = express();
 
 // ১. CORS কনফিগারেশন
 const corsOptions = {
-  origin: ["http://localhost:3000", "https://front-smarttask-2o1k.vercel.app"],
+  origin: [
+    "http://localhost:3000", 
+    "https://front-smarttask-2o1k.vercel.app", 
+    "https://front-smarttask-37lu.vercel.app" // এই নতুন লিঙ্কটি যোগ করুন
+  ],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   credentials: true,
 };
 app.use(cors(corsOptions));
