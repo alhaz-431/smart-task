@@ -4,11 +4,11 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-  "dev": "tsx watch src/index.ts",
-  "build": "npm install && prisma generate && prisma db push && tsc",
-  "start": "node dist/index.js",
-  "postinstall": "prisma generate"
-},
+    "dev": "tsx watch src/index.ts",
+    "build": "npm install && prisma generate && prisma db push && tsc",
+    "start": "node dist/index.js",
+    "postinstall": "prisma generate"
+  },
   "dependencies": {
     "@prisma/client": "5.22.0",
     "bcrypt": "^6.0.0",
