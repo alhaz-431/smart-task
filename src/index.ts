@@ -9,7 +9,7 @@ import projectRoutes from './routes/projectRoutes.js';
 import activityRoutes from './routes/activityRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
-import dashboardRoutes from './routes/dashboardRoutes.js'; 
+import dashboardRoutes from './routes/dashboardRoutes.js'; // একটি মাত্র ড্যাশবোর্ড রাউট
 
 // মিডলওয়্যার ইমপোর্ট
 import { protect } from './middlewares/authMiddleware.js';
@@ -17,36 +17,28 @@ import { errorHandler } from './middlewares/errorMiddleware.js';
 
 const app = express();
 
-// ১. CORS কনফিগারেশন
-const corsOptions = {
+app.use(cors({
   origin: [
     "http://localhost:3000", 
     "https://front-smarttask-2o1k.vercel.app", 
     "https://front-smarttask-37lu.vercel.app" 
   ],
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   credentials: true,
-};
-app.use(cors(corsOptions));
+}));
 
-// ২. অন্যান্য মিডলওয়্যার
 app.use(express.json());
 app.use(morgan('dev'));
 
-// ৩. হোম রুট
-app.get("/", (req: Request, res: Response) => {
-  res.json({ status: "success", message: "Smart Task API running 🚀" });
-});
-
-// ৪. এপিআই রাউটস (এগুলোই ঠিক আছে)
+// এপিআই রাউটস
 app.use('/api/auth', authRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/users', userRoutes); // আপনার ইউজার রাউট এখানে আছে
-app.use('/api/activity-logs', activityRoutes);
-app.use('/api/dashboard', protect, dashboardRoutes);
+app.use('/api/projects', protect, projectRoutes);
+app.use('/api/tasks', protect, taskRoutes);
+app.use('/api/users', protect, userRoutes);
+app.use('/api/activity-logs', protect, activityRoutes);
 
-// ৫. গ্লোবাল এরর হ্যান্ডলার
+// আপনার ড্যাশবোর্ড রাউট (যেহেতু একটি ফাইলই ব্যবহার করছেন)
+app.use('/api/dashboard', protect, dashboardRoutes); 
+
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
