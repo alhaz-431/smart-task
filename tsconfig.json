@@ -10,56 +10,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "moduleDetection": "force",
-
-    
-    "types": ["node"],
-    "typeRoots": ["./node_modules/@types"],
     "resolveJsonModule": true
   },
   "include": ["src/**/*"]
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
